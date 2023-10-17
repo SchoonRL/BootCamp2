@@ -13,7 +13,10 @@
 
   //imports the Listing Model we created in ListingModels.js
   import { Listing } from './ListingModel.js';
+//import { list } from '@sequelize/core/types/expression-builders/list.js';
+//import { List, list } from '@sequelize/core/types/expression-builders/list.js';
 
+ var listingData;
 /* Connect to your database 
   See: Sequalize Getting Started - Connecting to a database by passing a URI - Read: https://sequelize.org/docs/v6/getting-started/#connecting-to-a-database
   Copy URI/URL string from ElephantSQL - under details. 
@@ -23,11 +26,23 @@
   Read - artilce to learn more about environment variables - https://medium.com/the-node-js-collection/making-your-node-js-work-everywhere-with-environment-variables-2da8cdf6e786
 */
 //ADD CODE HERE to connect to you database
+const sequelize = new Sequelize(process.env.API_URL)
 
+try {
+  await sequelize.authenticate();
+  console.log('Connection established successfully');
+}
+catch (error) {
+  console.error('Unable to connect', error);
+}
+
+//console.log("BBBBBBBBBBBBB");
 //Testing that the .env file is working - This should print out the port number
 console.log(process.env.PORT); //Should print out 8080 
 console.log(process.env.API_Key); //Should print out "Key Not set - starter code only"
 
+
+//console.log("AAAAAAAAAAAAAAAAAA");
  try {
   //Setup table in the DB
   //Read more about Model Synchronization - https://sequelize.org/docs/v6/core-concepts/model-basics/#model-synchronization
@@ -41,15 +56,66 @@ console.log(process.env.API_Key); //Should print out "Key Not set - starter code
     // Errors-Check out this resource for an idea of the general format err objects and Throwing an existing object.
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/throw#throwing_an_existing_object
     if (err) throw err;
-    console.log(data);
+    //console.log(data);
 
+   
     //Save and parse the data from the listings.json file into a variable, so that we can iterate through each instance - Similar to Bootcamp#1
-   //ADD CODE HERE
-  
+    //ADD CODE HERE
+    listingData = JSON.parse(data);
+
      //Use Sequelize create a new row in our database for each entry in our listings.json file using the Listing model we created in ListingModel.js
     // to https://sequelize.org/docs/v6/core-concepts/model-instances/#creating-an-instance
      //ADD CODE HERE
-
+     console.log('\n');
+     var i, j = "";
+     var k = 0;
+    for (i in listingData.entries) {
+       console.log(listingData.entries[i].code);
+       console.log(listingData.entries[i].name);
+       console.log(JSON.stringify(listingData.entries[i].coordinates));
+       console.log(listingData.entries[i].address);
+       if (k == 3) {
+        break;
+       }
+       k++;
+       console.log('\n');
+    }
+    console.log('\n');
+     //console.log('\n' + listingData.entries[0] + '\n');
+     (async () => {
+      await sequelize.sync({ force: true });
+      /*const row = await Listing.create({
+        name: "Row"
+      })*/
+      for (j in listingData.entries) {
+      const row = await Listing.create({
+        code: listingData.entries[j].code, 
+        name: listingData.entries[j].name,
+        coordinates: JSON.stringify(listingData.entries[j].coordinates), 
+        address: listingData.entries[j].address
+        /*
+        code: listingData.entries[0],
+        name: listingData.entries[1],
+        //coordinates: {
+        latitude: -2.45654,
+        longitude: 3.55443,
+        //}, 
+        address: listingData.entries[3]
+        /*code: listingData.Listing.code,
+        name: listingData.Listing.name,
+        coordinates: {
+          latitude: listingData.Listing.coordinates[0],
+          longitude: listingData.Listing.coordinates[1]
+        },
+        address: listingData.Listing.address*/ 
+      });
+    }
+      console.log("A");
+      //console.log(row instanceof Listing);
+      //console.log(row.toJSON());
+      
+    })();
+  
     });
 } catch (error) {
   console.error('Unable to connect to the database:', error);

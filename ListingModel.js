@@ -13,7 +13,18 @@ import { Sequelize, Model, DataTypes } from '@sequelize/core';
   Good Implementation - const sequelize = new Sequelize(process.env.API_URL);
   Read - artilce to learn more about environment variables - https://medium.com/the-node-js-collection/making-your-node-js-work-everywhere-with-environment-variables-2da8cdf6e786
 */
+
 //ADD CODE HERE to connect to you database
+const sequelize = new Sequelize(process.env.API_URL)
+
+try {
+  await sequelize.authenticate();
+  console.log('Connection established successfully');
+}
+catch (error) {
+  console.error('Unable to connect', error);
+}
+
 
 /* Create your Sequalize Model for Listing */
 /*Hint: Take a look at listings.json to figure out the model attributes we need to define.
@@ -24,14 +35,41 @@ import { Sequelize, Model, DataTypes } from '@sequelize/core';
 const Listing = sequelize.define('Listing', {
   // Model attributes are defined here
   //ADD CODE HERE
+  code: {
+    type: DataTypes.STRING
+  },
+  name: {
+    type: DataTypes.STRING
+  },
+  coordinates: {
+    type: DataTypes.JSONB
+  },
+  address: {
+    type: DataTypes.STRING
+  }
 }, {
   // Other model options go here
   tableName: 'Listings'
 });
+/*
+const Coordinate = sequelize.define('coordinates', {
+  latitude: {
+    type: DataTypes.FLOAT
+  },
+  longitude: {
+    type: DataTypes.FLOAT
+  }
+}, {
+  // Other model options go here
+  tableName: 'Coordinates'
+});
 
+Listing.hasMany(Coordinate);
+Coordinate.belongsTo(Listing);
+*/
 // `sequelize.define` also returns the model
 console.log(Listing === sequelize.models.Listing); // true
-console.log(Listing);
+//console.log(Listing);
 
 /* Export the model to make it avaiable to other parts of your Node application */
 //Read article "ES6 Modules and How to Use Import and Export in JavaScript" https://www.digitalocean.com/community/tutorials/js-modules-es6

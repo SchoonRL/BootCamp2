@@ -7,6 +7,16 @@ import { Sequelize, Model, DataTypes,  QueryTypes, sql } from '@sequelize/core';
   import { Listing } from './ListingModel.js';
 /* Connect to your database */
 //ADD CODE HERE to connect to you database - same code you put for JSONtoPostgreSQL.js and ListingModel.js
+const sequelize = new Sequelize(process.env.API_URL)
+/*
+try {
+  await sequelize.authenticate();
+  console.log('Connection established successfully');
+}
+catch (error) {
+  console.error('Unable to connect', error);
+}*/
+
 
 /*There are many ways to make aynchronous calls in Javascript: Promises, callbacks, Asyc/Await - https://www.geeksforgeeks.org/difference-between-promise-and-async-await-in-node-js/
   Best Practice: A current practice is to use Async Await.  
@@ -52,7 +62,10 @@ try {
     */
       async function retrieveAllListings() {
           //ADD CODE HERE
+          const rows = await Listing.findAll();
+          console.log(rows.every(rows => rows instanceof Listing))
           console.log('Retrieving all listings');
+          console.log(JSON.stringify(rows, null, 2));
       }
     /* 
     Find the document that contains data corresponding to Library West, then log it to the console. 
@@ -61,6 +74,15 @@ try {
     async function findLibraryWest() {
        //ADD CODE HERE
       console.log('Finding Library West');
+      const libW = await Listing.findOne({where: {name: "Library West"}});
+      if (libW == null) {
+        console.log("Library West not found");
+      }
+      else {
+        console.log(libW instanceof Listing);
+        console.log(JSON.stringify(libW));
+      }
+      
 
     }
 
@@ -74,6 +96,14 @@ try {
       async function removeCable() {
          //ADD CODE HERE
         console.log('Removing Cable BLDG');
+        const cable = await Listing.findOne({where: {code: "CABL"}});
+        if (cable == null) {
+          console.log("CABL not found");
+        }
+        else {
+          await cable.destroy();
+          //console.log(cable instanceof Listing);
+        }
     }
 
     /*
@@ -83,28 +113,51 @@ try {
     async function addDSIT() {
        //ADD CODE HERE
       console.log('Adding the new DSIT BLDG that will be across from Reitz union. Bye Bye CSE, Hub, and French Fries.');
+      const [new_cseBuilding, created] = await Listing.findOrCreate({
+        where: {code: "DSIT"},
+        defaults: {
+          name: "Data Science and IT Building"
+        }
+      });
+      //console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+      if (created) {
+        console.log("DSIT entry created");
+      }
+      else {
+        console.log("DSIT entry has been found:");
+        console.log(JSON.stringify(new_cseBuilding));
+      }
     }
    
 
     /*
-      Phelps Memorial Hospital Center's address is incorrect.
+      Phelps Lab's address is incorrect.
       Find the listing, update it with the correct address (Google address), and then log the updated listing in the database and use console.log to inspect it.
       Learn more about the finder methods available to sequelize models - https://sequelize.org/docs/v6/core-concepts/model-querying-finders/ 
     */
     async function updatePhelpsLab() {
        //ADD CODE HERE
        console.log('UpdatingPhelpsLab.');
+       const phelps = await Listing.findOne({where: {name: "Phelps Laboratory"}});
+       if (phelps == null) {
+        console.log(`Entry ${phelps.name} not found.`);
+       }
+       else {
+        console.log("\n\n\n\n\n\n\n");
+        await phelps.update({address: "1953 Museum Rd, Gainesville, FL 32603"})
+        //await phelps.save()
+       }
  
     }
 
     
    console.log("Use these calls to test that your functions work. Use console.log statements in each so you can look at the terminal window to see what is executing. Also check the database.")
    //Calling all the functions to test them
-   retrieveAllListings() 
-   removeCable(); 
-   addDSIT();
-   updatePhelpsLab();
-   findLibraryWest();
+   await retrieveAllListings() 
+   await removeCable(); 
+   await addDSIT();
+   await updatePhelpsLab();
+   await findLibraryWest();
        
   
 
